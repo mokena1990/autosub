@@ -144,6 +144,21 @@ def extract_audio(filename, channels=1, rate=16000):
     subprocess.check_output(command, stdin=open(os.devnull), shell=use_shell)
     return temp.name, rate
 
+def get_seconds_from_time(timeStr):
+    h, m, s, ms = timeStr.replace(',', ':').split(':')
+    return "{}.{}".format(int(h) * 3600 + int(m) * 60 + int(s), int(ms))
+
+def get_timings_from_file(filename):
+    with open(filename) as lines:
+        array = []
+        for line in lines:
+            if "-->" in line:
+                array.append(line)
+    regions = []
+    for value in array:
+        timings = value.split()
+        regions.append((float(get_seconds_from_time(timings[0])), float(get_seconds_from_time(timings[2]))))
+    return regions
 
 def find_speech_regions(filename, frame_width=4096, min_region_size=0.5, max_region_size=6):
     reader = wave.open(filename)
@@ -184,6 +199,7 @@ def find_speech_regions(filename, frame_width=4096, min_region_size=0.5, max_reg
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('source_path', help="Path to the video or audio file to subtitle", nargs='?')
+    parser.add_argument('-T', '--timings', help="File with timings (for example, subtitles in other language)")
     parser.add_argument('-C', '--concurrency', help="Number of concurrent API requests to make", type=int, default=10)
     parser.add_argument('-o', '--output',
                         help="Output path for subtitles (by default, subtitles are saved in \
@@ -229,7 +245,10 @@ def main():
 
     audio_filename, audio_rate = extract_audio(args.source_path)
 
-    regions = find_speech_regions(audio_filename)
+    if args.timings is None:
+        regions = find_speech_regions(audio_filename)
+    else:
+        regions = get_timings_from_file(args.timings)
 
     pool = multiprocessing.Pool(args.concurrency)
     converter = FLACConverter(source_path=audio_filename)
