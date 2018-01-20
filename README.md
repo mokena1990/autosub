@@ -15,6 +15,7 @@ $ autosub -h
 usage: autosub [-h] [-C CONCURRENCY] [-o OUTPUT] [-F FORMAT] [-S SRC_LANGUAGE]
                [-D DST_LANGUAGE] [-K API_KEY] [--list-formats]
                [--list-languages]
+               [-T TIMINGS]
                [source_path]
 
 positional arguments:
@@ -22,6 +23,8 @@ positional arguments:
 
 optional arguments:
   -h, --help            show this help message and exit
+  -T TIMINGS, --timings TIMINGS
+                        file with srt-timings
   -C CONCURRENCY, --concurrency CONCURRENCY
                         Number of concurrent API requests to make
   -o OUTPUT, --output OUTPUT
